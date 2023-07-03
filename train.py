@@ -1,5 +1,5 @@
 import torch
-from config.default import cfg
+from config.config import cfg
 import os
 import torch.distributed as dist
 from lib.dataset import make_data_loader
@@ -7,6 +7,8 @@ from lib.network import make_network
 from lib.trainer import make_trainer
 from lib.optimizer import make_optimizer
 from lib.evaluator import make_evaluator
+from lib.recorder import make_recorder
+from lib.scheduler import make_scheduler
 
 
 if cfg.fix_random:
@@ -24,7 +26,6 @@ def train():
     scheduler = make_scheduler()
     recorder = make_recorder()
     evaluator = make_evaluator()
-    
     
 
 def synchronize():
@@ -49,3 +50,4 @@ def main():
         
 if __name__ == '__main__':
     main()
+    
