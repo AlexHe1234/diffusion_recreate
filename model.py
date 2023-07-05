@@ -196,7 +196,12 @@ class DDPM(nn.Module):
         context_mask = torch.bernoulli(torch.zeros_like(c) + self.drop_prob).to(self.device)
         return self.loss(noise, self.model(x_t, c, timesteps / self.timestep, context_mask))
     
-    def sample(self, num_samples, size, device, guide_weights=0.0):
+    def sample(self, 
+               num_samples, 
+               size, 
+               device, 
+               guide_weights=0.0, 
+               mid_result_count: int=10):
         x_i = torch.randn(num_samples, *size).to(device)
         c_i = torch.arange(0, 10).to(device)
         c_i = c_i.repeat(int(num_samples / c_i.shape[0]))
@@ -208,7 +213,9 @@ class DDPM(nn.Module):
         context_mask[num_samples:] = 1.
         
         x_i_store = []
-        for i in range(self.timestep):
+        mid_interval = cfg.timestep // (mid_result_count - 1)
+        
+        for i in range(self.timestep, 0, -1):
             t_is = torch.tensor([i / self.timestep]).to(device)
             t_is = t_is.repeat(num_samples, 1, 1, 1)
             
@@ -221,10 +228,11 @@ class DDPM(nn.Module):
             eps2 = eps[num_samples:]
             eps = (1 + guide_weights) * eps1 - guide_weights * eps2
             x_i = x_i[:num_samples]
-            x_i = self.oneever_sqrta[i] * (x_i - eps * self.mab_over_sqrtmab[i]) + \
+            x_i = self.oneover_sqrta[i] * (x_i - eps * self.mab_over_sqrtmab[i]) + \
                 self.sqrt_beta_t[i] * z
-            if i % 20 == 0 or i == self.timestep or i < 8:
+            if i % mid_interval == 0 or i == self.timestep:
                 x_i_store.append(x_i.detach().cpu().numpy())
         x_i_store = np.array(x_i_store)
+        
         return x_i, x_i_store
     

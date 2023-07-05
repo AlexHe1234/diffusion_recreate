@@ -16,7 +16,8 @@ cfg.lr = 1e-4
 cfg.log_iter = 10
 cfg.save_iter = 10
 cfg.save_dir = 'result'
-
+cfg.eval_epoch = 1
+cfg.guided_weight = 1.5
 
 # params
 cfg.timestep = 400
